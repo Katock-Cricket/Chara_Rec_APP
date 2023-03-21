@@ -1,71 +1,51 @@
 package android.king.signature.util;
 
+import static android.content.ContentValues.TAG;
+
 import android.graphics.Bitmap;
+import android.os.Environment;
+import android.util.Log;
 
-import org.pytorch.IValue;
-import org.pytorch.MemoryFormat;
-import org.pytorch.Module;
-import org.pytorch.Tensor;
-import org.pytorch.torchvision.TensorImageUtils;
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class RecNet {
-    private final Module module;
-    private final Map<String, Integer> dict;
+    public final String module, dict;
 
 
-    public RecNet(Module module, Map<String, Integer> dict){
+    public RecNet(String module, String dict) {
         this.module = module;
         this.dict = dict;
     }
 
-    public String inference(Bitmap bitmapSrc){
-        Bitmap bitmap = Bitmap.createScaledBitmap(bitmapSrc, 32, 32, true);
-        bitmap = processBMP(bitmap);
-        Tensor inputTensor = TensorImageUtils.bitmapToFloat32Tensor(bitmap, new float[]{0, 0, 0}, new float[]{1, 1, 1}, MemoryFormat.CHANNELS_LAST);
-        System.out.println(Arrays.toString(inputTensor.getDataAsFloatArray()));
-        final Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
-        final float[] scores = outputTensor.getDataAsFloatArray();
-        final int index = getMax(scores);
-        String result = "Error";
-        for (Map.Entry<String, Integer> entry : dict.entrySet())
-            if (entry.getValue().equals(index))
-                result = entry.getKey();
-        return result;
+    public static String inference(Bitmap bitmap, String module,String dict) {
+        String imgPath = saveBitmap(bitmap);
+        Python python = Python.getInstance();
+        PyObject pyObject = python.getModule("demo").callAttr("demo", imgPath, module, dict);
+        String ret = pyObject.toJava(String.class);
+        return ret;
     }
 
-    private Bitmap processBMP(Bitmap bitmap_ori){
-        final int pixCnt = 32*32;
-        final int[] pixels = new int[pixCnt];
-        bitmap_ori.getPixels(pixels, 0, 32, 0,0,32,32);
-        for(int i=0;i<pixels.length;i++){
-            pixels[i]--;
+    public static String saveBitmap(Bitmap bm) {
+        Log.e(TAG, "保存图片");
+        String path = Environment.getExternalStorageDirectory() +"/test.png";
+        File f = new File(path);
+        if (f.exists()) {
+            System.out.println("del exist Img: " + f.delete());
         }
-        return Bitmap.createBitmap(pixels, 32, 32, Bitmap.Config.RGBA_F16);
-    }
-
-    private void outputBMP(Bitmap bitmap){
-        final int pixCnt = 32*32;
-        final int[] pixels = new int[pixCnt];
-        bitmap.getPixels(pixels, 0, 32, 0,0,32,32);
-        System.out.println(Arrays.toString(pixels));
-    }
-
-    private static int getMax(float[] scores) {
-        float maxScore = -Float.MAX_VALUE;
-        int maxScoreIdx = -1;
-        for (int i = 0; i < scores.length; i++) {
-            if (scores[i] > maxScore) {
-                maxScore = scores[i];
-                maxScoreIdx = i;
-            }
+        try {
+            FileOutputStream out = new FileOutputStream(f);
+            bm.compress(Bitmap.CompressFormat.PNG, 90, out);
+            out.flush();
+            out.close();
+            Log.i(TAG, "已经保存");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println("index: " + maxScoreIdx);
-        System.out.println("max val: " + scores[maxScoreIdx]);
-        return maxScoreIdx;
+        return path;
     }
-
-
 }

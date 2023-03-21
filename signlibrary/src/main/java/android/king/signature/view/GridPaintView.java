@@ -84,7 +84,7 @@ public class GridPaintView extends View {
     private void initCanvas() {
         mCanvas = new Canvas(mBitmap);
         //设置画布的颜色的问题
-        mCanvas.drawColor(Color.TRANSPARENT);
+        mCanvas.drawColor(Color.WHITE);
     }
 
 
@@ -136,7 +136,7 @@ public class GridPaintView extends View {
      * 清除画布
      */
     public void reset() {
-        mBitmap.eraseColor(Color.TRANSPARENT);
+        mBitmap.eraseColor(Color.WHITE);
         hasDraw = false;
         mStokeBrushPen.clear();
         invalidate();

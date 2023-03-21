@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.king.signature.util.DisplayUtil;
 import android.king.signature.util.RecNet;
+import android.king.signature.util.SystemUtil;
 import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -14,12 +15,6 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.inputmethod.EditorInfo;
-
-import android.king.signature.util.SystemUtil;
-
-import org.pytorch.Module;
-
-import java.util.Map;
 
 
 /**
@@ -50,7 +45,7 @@ public class HandWriteEditView extends AppCompatEditText {
         init();
     }
 
-    public void setNet(Module module, Map<String, Integer> dict){
+    public void setNet(String module, String dict){
         recNet = new RecNet(module, dict);
     }
 
@@ -110,7 +105,7 @@ public class HandWriteEditView extends AppCompatEditText {
             return null;
         }
 
-        String chara = recNet.inference(srcBitmap);
+        String chara = RecNet.inference(srcBitmap, recNet.module, recNet.dict);
         SpannableString mSpan = new SpannableString(chara);
 //        mSpan.setSpan(new ImageSpan(getContext(), srcBitmap), mSpan.length() - 1, mSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
@@ -181,7 +176,7 @@ public class HandWriteEditView extends AppCompatEditText {
     }
 
     boolean canCopy() {
-        return false;
+        return true;
     }
 
     boolean canSelectAllText() {

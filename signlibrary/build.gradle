@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.chaquo.python'
+
 
 android {
     compileSdkVersion 28
@@ -9,9 +11,18 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0.0"
-
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
+        python {
+            buildPython "D:/Python/python.exe"
+            pip {
+                install "torch==1.8.1"
+                install "torchvision==0.9.1"
+                install "Pillow"
+            }
+        }
     }
     buildTypes {
         release {
@@ -35,9 +46,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'org.pytorch:pytorch_android:1.10.0'
-    implementation 'org.pytorch:pytorch_android_torchvision:1.10.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
 
 }
 

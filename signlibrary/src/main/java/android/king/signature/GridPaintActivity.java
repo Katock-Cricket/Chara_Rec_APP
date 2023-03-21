@@ -10,22 +10,9 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.king.signature.util.DisplayUtil;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.text.Editable;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.Toast;
-
 import android.king.signature.config.PenConfig;
 import android.king.signature.util.BitmapUtil;
+import android.king.signature.util.DisplayUtil;
 import android.king.signature.util.SystemUtil;
 import android.king.signature.view.CircleImageView;
 import android.king.signature.view.CircleView;
@@ -34,20 +21,28 @@ import android.king.signature.view.GridPaintView;
 import android.king.signature.view.HVScrollView;
 import android.king.signature.view.HandWriteEditView;
 import android.king.signature.view.PaintSettingWindow;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
+import android.text.Editable;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Toast;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.pytorch.Module;
+import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /***
@@ -103,18 +98,13 @@ public class GridPaintActivity extends BaseActivity implements View.OnClickListe
     }
 
     private void initNet(){
+        if (!Python.isStarted()) {
+            Python.start(new AndroidPlatform(this));
+        }
         try {
-            Module module = Module.load(assetFilePath(this, "model.pt"));
-            InputStream is = getAssets().open("char_dict.json");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            System.out.println(is.read(buffer));
-            is.close();
-            String json = new String(buffer, StandardCharsets.UTF_8);
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Integer> dict = objectMapper.readValue(json, new TypeReference<HashMap<String, Integer>>() {
-            });
-            mEditView.setNet(module, dict);
+            String model = assetFilePath(this, "model.ptl");
+            String dict = assetFilePath(this, "char_dict");
+            mEditView.setNet(model, dict);
         } catch (IOException e) {
             Log.e("Err loading net", "json or model", e);
         }
@@ -140,6 +130,7 @@ public class GridPaintActivity extends BaseActivity implements View.OnClickListe
     /**
      * 横竖屏切换
      */
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -183,6 +174,7 @@ public class GridPaintActivity extends BaseActivity implements View.OnClickListe
     /**
      * 初始化视图
      */
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     protected void initView() {
         mPaintView = findViewById(R.id.paint_view);
@@ -304,7 +296,7 @@ public class GridPaintActivity extends BaseActivity implements View.OnClickListe
                 break;
             case MSG_WRITE_OK:
                 if (!mPaintView.isEmpty()) {
-                    Bitmap bitmap = mPaintView.buildBitmap(isCrop, DisplayUtil.dip2px(GridPaintActivity.this, fontSize));
+                    Bitmap bitmap = mPaintView.buildBitmap(false, DisplayUtil.dip2px(GridPaintActivity.this, fontSize));
                     this.cacheEditable = mEditView.addBitmapToText(bitmap);
                     mPaintView.reset();
                 }

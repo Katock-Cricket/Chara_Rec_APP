@@ -113,12 +113,13 @@
             android:layout_margin="10dp"
             android:maxWidth="250dp"
             android:padding="10dp" />
-<!--        <ImageView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:id="@+id/test_bitmap"/>-->
-
     </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/test_bitmap"
+        android:contentDescription="TODO" />
 
 
 </LinearLayout>

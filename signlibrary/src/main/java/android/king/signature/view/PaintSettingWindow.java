@@ -20,7 +20,7 @@ import android.king.signature.config.PenConfig;
  * @since 2018-06-04
  */
 public class PaintSettingWindow extends PopupWindow {
-    public static final String[] PEN_COLORS = new String[]{"#101010", "#027de9", "#0cba02", "#f9d403", "#ec041f"};
+    public static final String[] PEN_COLORS = new String[]{"#5c5c5c", "#027de9", "#0cba02", "#f9d403", "#ec041f"};
     public static final int[] PEN_SIZES = new int[]{5, 15, 20, 25, 30};
 
     private Context context;
